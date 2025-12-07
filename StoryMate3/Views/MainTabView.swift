@@ -35,6 +35,14 @@ struct MainTabView: View {
                 Label("Home", systemImage: "house.fill")
             }
             
+//            NavigationView {
+//                HomeView()
+//            }
+//            .navigationViewStyle(.stack)
+//            .tabItem {
+//                Label("Home", systemImage: "house.fill")
+//            }
+            
             NavigationView {
                 MyCollectionView()
             }
