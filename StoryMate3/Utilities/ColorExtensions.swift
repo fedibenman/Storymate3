@@ -5,6 +5,8 @@ extension Color {
     static let pixelDarkBlue = Color(hex: "#1E3A8A")
     static let pixelCyan = Color(hex: "#00FFFF")
     static let pixelHighlight = Color(hex: "#FFFF00")
+    static let pixelMidBlue = Color(hex: "#2B4B7F")
+    static let pixelAccent = Color(hex: "#FF69B4")
     
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)

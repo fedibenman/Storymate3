@@ -19,15 +19,7 @@ var body: some View {
                 ProjectsListScreenWithNavigation()
                     .tag(0)
                 
-                CommunityProjectsScreen(
-                    viewModel: communityProjectViewModel,
-                    storyViewModel: storyProjectViewModel,
-                    onProjectClick: { _ in },
-                    onForkSuccess: {
-                        // Switch to My Projects tab after forking
-                        selectedTab = 0
-                    }
-                )
+                CommunityProjectsScreen()
                 .tag(1)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))

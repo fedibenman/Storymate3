@@ -35,13 +35,14 @@ struct MainTabView: View {
                 Label("Home", systemImage: "house.fill")
             }
             
-//            NavigationView {
-//                HomeView()
-//            }
-//            .navigationViewStyle(.stack)
-//            .tabItem {
-//                Label("Home", systemImage: "house.fill")
-//            }
+            // Story Projects Tab - Main Community Page
+            NavigationView {
+                ProjectsMainScreen()
+            }
+            .navigationViewStyle(.stack)
+            .tabItem {
+                Label("Projects", systemImage: "doc.text.fill")
+            }
             
             NavigationView {
                 MyCollectionView()

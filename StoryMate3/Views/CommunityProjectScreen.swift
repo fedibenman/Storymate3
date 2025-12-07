@@ -1,5 +1,16 @@
 import SwiftUI
 
+// MARK: - Story Step Model
+
+struct StoryStep {
+    let nodeId: String
+    let nodeType: NodeType
+    let text: String
+    let imageData: String
+    let choice: String?
+    let timestamp: Date
+}
+
 // MARK: - Community Projects Screen
 
 struct CommunityProjectsScreen: View {
@@ -42,7 +53,7 @@ struct CommunityProjectsScreen: View {
         }
         .onAppear {
             if let userId = AuthManager.shared.userId {
-                viewModel.setCurrentUserId(userId)
+                viewModel.setCurrentUserId(userId: userId)
             }
         }
     }
@@ -56,7 +67,7 @@ struct CommunityProjectsScreen: View {
                         isSelected: selectedFilter == filter
                     ) {
                         selectedFilter = filter
-                        viewModel.filterProjects(filter)
+                        viewModel.filterProjects(filter: filter)
                     }
                 }
             }
@@ -111,9 +122,7 @@ struct CommunityProjectsScreen: View {
                             viewModel.toggleStar(projectId: project.id)
                         },
                         onFork: {
-                            viewModel.forkProject(projectId: project.id) {
-                                // Success - could show toast
-                            }
+                            viewModel.forkProject(projectId: project.id)
                         }
                     )
                 }
@@ -231,7 +240,7 @@ struct CommunityProjectCard: View {
                             .foregroundColor(.gray)
                     }
                     
-                    Text(project.createdAt.toDate().formatted())
+                    Text(formatTimestamp(project.createdAt))
                         .font(.system(size: 10, design: .monospaced))
                         .foregroundColor(.gray)
                 }
@@ -289,6 +298,14 @@ struct CommunityProjectCard: View {
                 .stroke(Color.pixelAccent, lineWidth: 3)
         )
     }
+    
+    private func formatTimestamp(_ timestamp: Int64) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(timestamp / 1000))
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
 }
 
 // MARK: - Preview Overlay With History
@@ -323,7 +340,7 @@ struct PreviewOverlayWithHistory: View {
                 // Content
                 ScrollView {
                     if let nodeId = currentNodeId,
-                       let node = state.findNode(nodeId) {
+                       let node = state.findNode(id: nodeId) {
                         nodeContent(node)
                             .padding()
                     }
@@ -393,8 +410,8 @@ struct PreviewOverlayWithHistory: View {
                 )
             
             // Image if exists
-            if let imageData = node.imageData, !imageData.isEmpty {
-                Base64Image(base64String: imageData, contentMode: .fit)
+            if !node.imageData.isEmpty {
+                Base64Image(base64String: node.imageData, placeholder: "photo")
                     .frame(height: 300)
                     .background(Color(hex: "1A1A1A"))
                     .overlay(
@@ -425,18 +442,18 @@ struct PreviewOverlayWithHistory: View {
     private func navigationOptions(for node: FlowNode) -> some View {
         switch node.type {
         case .start, .story:
-            let decisions = node.outs.compactMap { state.findNode($0) }.filter { $0.type == .decision }
+            let decisions = node.outs.compactMap { state.findNode(id: $0) }.filter { $0.type == .decision }
             
             if !decisions.isEmpty {
                 choicesView(decisions)
-            } else if let nextNode = node.outs.compactMap({ state.findNode($0) }).first {
+            } else if let nextNode = node.outs.compactMap({ state.findNode(id: $0) }).first {
                 PixelTextButton(text: "→ CONTINUE") {
                     navigateTo(nextNode)
                 }
             }
             
         case .decision:
-            let options = node.outs.compactMap { state.findNode($0) }
+            let options = node.outs.compactMap { state.findNode(id: $0) }
             if !options.isEmpty {
                 choicesView(options)
             }

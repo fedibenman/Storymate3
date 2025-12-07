@@ -3,7 +3,7 @@ import OSLog
 
 class APIClient {
     static let shared = APIClient()
-    static let baseURL = "https://your-api-url.com/api" // Replace with actual URL
+    static let baseURL = "http://localhost:3001" // Replace with actual URL
     
     private let session: URLSession
     private static let logger = Logger(subsystem: "com.storymate", category: "APIClient")
@@ -46,17 +46,6 @@ class APIClient {
     }
 }
 
-// MARK: - Story History
-
-struct StoryStep: Identifiable {
-    let id = UUID()
-    let nodeId: String
-    let nodeType: NodeType
-    let text: String
-    let imageData: String?
-    let choice: String?
-    let timestamp: Date
-}
 
 // MARK: - Publish State
 

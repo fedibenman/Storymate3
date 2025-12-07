@@ -1,7 +1,8 @@
 import Foundation
+import Combine
 
-struct FlowchartState {
-    var nodes: [FlowNode]
+class FlowchartState: ObservableObject {
+    @Published var nodes: [FlowNode]
     
     init(nodes: [FlowNode] = []) {
         self.nodes = nodes
@@ -11,17 +12,17 @@ struct FlowchartState {
         return nodes.first { $0.id == id }
     }
     
-    mutating func addNode(_ node: FlowNode) {
+    func addNode(_ node: FlowNode) {
         nodes.append(node)
     }
     
-    mutating func updateNode(_ node: FlowNode) {
+    func updateNode(_ node: FlowNode) {
         if let index = nodes.firstIndex(where: { $0.id == node.id }) {
             nodes[index] = node
         }
     }
     
-    mutating func removeNode(id: String) {
+    func removeNode(id: String) {
         nodes.removeAll { $0.id == id }
     }
 }

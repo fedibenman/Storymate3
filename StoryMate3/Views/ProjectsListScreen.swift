@@ -36,7 +36,7 @@ struct ProjectsListScreen: View {
             }
             .sheet(item: $projectToDelete) { project in
                 DeleteConfirmationDialog(projectTitle: project.title) {
-                    viewModel.deleteProject(project.id)
+                    viewModel.deleteProject(projectId: project.id)
                     projectToDelete = nil
                 }
             }
@@ -45,7 +45,7 @@ struct ProjectsListScreen: View {
                     projectTitle: project.title,
                     isLoading: viewModel.publishState == .loading
                 ) {
-                    viewModel.publishProject(project.id) {
+                    viewModel.publishProject(projectId: project.id) {
                         projectToShare = nil
                     }
                 } onDismiss: {
@@ -175,7 +175,7 @@ struct ProjectCard: View {
                 
                 // Footer
                 HStack {
-                    Text("Updated: \(project.updatedAt.toDate().formatted())")
+                    Text("Updated: \(formatTimestamp(project.updatedAt))")
                         .font(.system(size: 10, design: .monospaced))
                         .foregroundColor(.gray)
                     
@@ -205,6 +205,14 @@ struct ProjectCard: View {
             )
         }
         .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func formatTimestamp(_ timestamp: Int64) -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(timestamp / 1000))
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
 }
 
@@ -257,16 +265,13 @@ struct CreateProjectDialog: View {
                 HStack(spacing: 12) {
                     PixelTextButton(text: "✕ CANCEL", action: {
                         dismiss()
-                    }, hexColor: "#FFD700", fontSize: 12)
+                    })
                     
-                    Button(action: {
+                    PixelTextButton(text: "✓ CREATE", action: {
                         onCreate(title.trimmingCharacters(in: .whitespaces),
                                 description.trimmingCharacters(in: .whitespaces))
                         dismiss()
-                    }, label: {
-                        PixelTextButton(text: "✓ CREATE", action: {}, hexColor: "#00FFFF", fontSize: 12)
-                    })
-                    .disabled(title.isEmpty)
+                    }, enabled: !title.isEmpty)
                 }
             }
             .padding(24)
@@ -305,14 +310,14 @@ struct DeleteConfirmationDialog: View {
                     .multilineTextAlignment(.center)
                 
                 HStack(spacing: 12) {
-                    PixelTextButton(text: "CANCEL") {
+                    PixelTextButton(text: "CANCEL", action: {
                         dismiss()
-                    }
+                    })
                     
-                    PixelTextButton(text: "DELETE") {
+                    PixelTextButton(text: "DELETE", action: {
                         onConfirm()
                         dismiss()
-                    }
+                    })
                 }
             }
             .padding(24)
@@ -362,14 +367,14 @@ struct ShareConfirmationDialog: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .pixelGold))
                 } else {
                     HStack(spacing: 12) {
-                        PixelTextButton(text: "✕ CANCEL") {
+                        PixelTextButton(text: "✕ CANCEL", action: {
                             dismiss()
                             onDismiss()
-                        }
+                        })
                         
-                        PixelTextButton(text: "✓ SHARE") {
+                        PixelTextButton(text: "✓ SHARE", action: {
                             onConfirm()
-                        }
+                        })
                     }
                 }
             }
