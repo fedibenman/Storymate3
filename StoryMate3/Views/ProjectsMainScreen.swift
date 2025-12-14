@@ -2,6 +2,7 @@ import SwiftUI
 
 // MARK: - Projects Main Screen with Tabs
 
+// MARK: - Projects Main Screen with Tabs
 struct ProjectsMainScreen: View {
     @State private var selectedTab = 0
     @StateObject private var storyProjectViewModel = StoryProjectViewModel()
@@ -9,7 +10,7 @@ struct ProjectsMainScreen: View {
     
     let tabs = ["📚 My Projects", "🌍 Community"]
     
-var body: some View {
+    var body: some View {
         VStack(spacing: 0) {
             // Custom tab bar
             customTabBar
@@ -17,6 +18,7 @@ var body: some View {
             // Content based on selected tab
             TabView(selection: $selectedTab) {
                 ProjectsListScreenWithNavigation()
+                    .environmentObject(storyProjectViewModel)  // ← PASS TO CHILD
                     .tag(0)
                 
                 CommunityProjectsScreen()
@@ -26,6 +28,7 @@ var body: some View {
         }
         .background(Color.pixelDarkBlue)
     }
+    
     
     private var customTabBar: some View {
         HStack(spacing: 0) {
@@ -66,7 +69,7 @@ var body: some View {
 // MARK: - Projects List Screen with Navigation
 
 struct ProjectsListScreenWithNavigation: View {
-    @StateObject private var viewModel = StoryProjectViewModel()
+    @EnvironmentObject var viewModel: StoryProjectViewModel  // ← USE ENVIRONMENT
     @State private var showCreateDialog = false
     @State private var projectToDelete: ProjectDto?
     @State private var projectToShare: ProjectDto?
@@ -78,7 +81,6 @@ struct ProjectsListScreenWithNavigation: View {
             Color.pixelDarkBlue.ignoresSafeArea()
                 
             VStack(spacing: 0) {
-                // Header with create button
                 createButtonBar
                 
                 if viewModel.isLoading {
@@ -117,10 +119,14 @@ struct ProjectsListScreenWithNavigation: View {
         }
         .fullScreenCover(isPresented: $showFlowBuilder) {
             if let projectId = selectedProjectId {
-                FlowBuilderScreenWrapper(projectId: projectId) {
-                    showFlowBuilder = false
-                    selectedProjectId = nil
-                }
+                FlowBuilderScreenWrapper(
+                    projectId: projectId,
+                    onDismiss: {
+                        showFlowBuilder = false
+                        selectedProjectId = nil
+                    }
+                )
+                .environmentObject(viewModel)  // ← PASS VM TO WRAPPER
             }
         }
     }
@@ -192,36 +198,40 @@ private var projectsGrid: some View {
 
 struct FlowBuilderScreenWrapper: View {
     let projectId: String
+    @EnvironmentObject var storyViewModel: StoryProjectViewModel
     let onDismiss: () -> Void
     
     var body: some View {
         NavigationView {
-            FlowBuilderScreen(projectId: projectId)
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button(action: onDismiss) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                Text("Projects")
-                            }
-                            .font(.system(size: 16, design: .monospaced))
-                            .foregroundColor(.pixelGold)
+            FlowchartEditorView(
+                state: FlowchartState(),
+                projectId: projectId,
+                viewModel: storyViewModel  // ← USE ENVIRONMENT VM
+            )
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: onDismiss) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Projects")
                         }
-                    }
-                    
-                    ToolbarItem(placement: .principal) {
-                        Text("✏️ FLOW BUILDER")
-                            .font(.system(size: 16, design: .monospaced))
-                            .fontWeight(.bold)
-                            .foregroundColor(.pixelGold)
-                            .tracking(1)
-                        }
+                        .font(.system(size: 16, design: .monospaced))
+                        .foregroundColor(.pixelGold)
                     }
                 }
+                
+                ToolbarItem(placement: .principal) {
+                    Text("✏️ FLOW BUILDER")
+                        .font(.system(size: 16, design: .monospaced))
+                        .fontWeight(.bold)
+                        .foregroundColor(.pixelGold)
+                        .tracking(1)
+                }
+            }
         }
     }
-
+}
 // MARK: - Preview
 
 #if DEBUG

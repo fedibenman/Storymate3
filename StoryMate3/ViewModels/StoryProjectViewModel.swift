@@ -63,28 +63,32 @@ class StoryProjectViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Load Flowchart
+        // MARK: - Load Flowchart
     func loadFlowchart(projectId: String, callback: @escaping (FlowchartState?) -> Void) {
-        Task {
-            do {
-                if let flowchartDto = try await repository.getFlowchart(projectId: projectId) {
-                    let state = flowchartDto.toFlowchartState()
-                    await MainActor.run {
-                        callback(state)
-                    }
-                } else {
-                    await MainActor.run {
-                        callback(nil)
-                    }
-                }
-            } catch {
-                print("Error loading flowchart: \(error)")
-                await MainActor.run {
-                    callback(nil)
-                }
-            }
-        }
-    }
+         print("🔄 loadFlowchart called for project: \(projectId)")
+         
+         Task {
+             do {
+                 if let flowchartDto = try await repository.getFlowchart(projectId: projectId) {
+                     let state = flowchartDto.toFlowchartState()
+                     await MainActor.run {
+                         print("✅ Flowchart loaded successfully")
+                         callback(state)
+                     }
+                 } else {
+                     await MainActor.run {
+                         print("⚠️ No flowchart found, creating new")
+                         callback(nil)
+                     }
+                 }
+             } catch {
+                 print("❌ Error loading flowchart: \(error)")
+                 await MainActor.run {
+                     callback(nil)
+                 }
+             }
+         }
+     }
     
     // MARK: - Save Flowchart
     func saveFlowchart(projectId: String, state: FlowchartState) {

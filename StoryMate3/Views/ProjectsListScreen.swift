@@ -8,6 +8,7 @@ struct ProjectsListScreen: View {
     @State private var projectToDelete: ProjectDto?
     @State private var projectToShare: ProjectDto?
     @State private var selectedProjectId: String?
+    @State private var navigateToEditor = false
     
     var body: some View {
         NavigationView {
@@ -26,11 +27,38 @@ struct ProjectsListScreen: View {
                         projectsGrid
                     }
                 }
+                
+                // ✅ FIXED: Navigation to FlowchartEditorView
+                if let projectId = selectedProjectId {
+                    NavigationLink(
+                        destination: FlowchartEditorView(
+                            state: FlowchartState(),
+                            projectId: projectId,
+                            viewModel: viewModel
+                        )
+                        .navigationBarBackButtonHidden(false)
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .principal) {
+                                Text(getProjectTitle(projectId))
+                                    .font(.custom("Courier", size: 16).weight(.bold))
+                                    .foregroundColor(.white)
+                            }
+                        },
+                        isActive: $navigateToEditor
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
+                }
             }
+            .navigationTitle("My Stories")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showCreateDialog) {
                 CreateProjectDialog { title, description in
                     viewModel.createNewProject(title: title, description: description) { projectId in
                         selectedProjectId = projectId
+                        navigateToEditor = true
                     }
                 }
             }
@@ -53,6 +81,10 @@ struct ProjectsListScreen: View {
                 }
             }
         }
+    }
+    
+    private func getProjectTitle(_ projectId: String) -> String {
+        viewModel.projects.first { $0.id == projectId }?.title ?? "Project"
     }
     
     private var createButtonBar: some View {
@@ -104,7 +136,11 @@ struct ProjectsListScreen: View {
                 ForEach(viewModel.projects) { project in
                     ProjectCard(
                         project: project,
-                        onClick: { selectedProjectId = project.id },
+                        onClick: {
+                            print("🟢 ProjectCard clicked for project: \(project.id)")
+                            selectedProjectId = project.id
+                            navigateToEditor = true
+                        },
                         onDelete: { projectToDelete = project },
                         onShare: { projectToShare = project }
                     )
@@ -182,13 +218,17 @@ struct ProjectCard: View {
                     Spacer()
                     
                     HStack(spacing: 12) {
-                        Button(action: onShare) {
+                        Button(action: {
+                            onShare()
+                        }) {
                             Image(systemName: "square.and.arrow.up")
                                 .foregroundColor(.pixelGold)
                         }
                         .buttonStyle(PlainButtonStyle())
                         
-                        Button(action: onDelete) {
+                        Button(action: {
+                            onDelete()
+                        }) {
                             Image(systemName: "trash")
                                 .foregroundColor(.pixelHighlight)
                         }
